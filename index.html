@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Emilia · XV Años · 24.04.26</title>
+<title>Emilia · XV Años · 24.04.26 — Versión Clara</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -978,20 +978,7 @@ button,input,select,textarea { font-family:inherit; }
       <p class="sec-lbl">¿Tenés una sugerencia?</p>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2.8vw,19px);font-weight:300;color:var(--silver-light);font-style:italic;">Sumá tu canción a la playlist de la noche</h3>
 
-      <!-- ═══════════════════════════════════════════════
-           FORMULARIO CANCIÓN → FormSubmit → Google Sheets
-           PASO 1: Reemplazá TU-EMAIL@gmail.com por tu email real
-           PASO 2: Al primer envío, FormSubmit te manda un email
-                   de confirmación — hacé click en "Activate Form"
-           PASO 3: Los datos llegan a tu email y podés conectarlos
-                   a Google Sheets (ver instrucciones al pie)
-      ═══════════════════════════════════════════════ -->
-      <form id="song-form"
-            action="https://formsubmit.co/ajax/68204ec020251599e51a3576dc5b8220"
-            method="POST">
-        <input type="hidden" name="_subject"   value="🎵 Nueva canción sugerida - XV Emilia">
-        <input type="hidden" name="_template"  value="table">
-        <input type="hidden" name="_captcha"   value="false">
+      <form id="song-form" action="https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec" method="POST">
         <input type="hidden" name="formulario" value="Sugerencia de canción">
 
         <div class="sug-row">
@@ -1020,20 +1007,7 @@ button,input,select,textarea { font-family:inherit; }
     </div>
     <div class="rsvp-form reveal">
 
-      <!-- ═══════════════════════════════════════════════
-           FORMULARIO ASISTENCIA → FormSubmit → Google Sheets
-           PASO 1: Reemplazá TU-EMAIL@gmail.com por tu email real
-                   (el mismo que uses para Google Sheets)
-           PASO 2: Al primer envío te llega email de activación
-                   → click en "Activate Form"
-           PASO 3: Los datos llegan a tu email como tabla ordenada
-      ═══════════════════════════════════════════════ -->
-      <form id="rsvp-form"
-            action="https://formsubmit.co/ajax/68204ec020251599e51a3576dc5b8220"
-            method="POST">
-        <input type="hidden" name="_subject"   value="✅ Nueva confirmación de asistencia - XV Emilia">
-        <input type="hidden" name="_template"  value="table">
-        <input type="hidden" name="_captcha"   value="false">
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec" method="POST">
         <input type="hidden" name="formulario" value="Confirmación de asistencia">
 
         <div id="rsvp-inner">
@@ -1147,7 +1121,7 @@ button,input,select,textarea { font-family:inherit; }
 <footer class="footer">
   <div class="foot-orn"><div class="dmd"></div></div>
   <div class="foot-name reveal">Emilia</div>
-  <p class="foot-love reveal d1">24 &middot; 04 &middot; 2026 &nbsp;&middot;&nbsp; XV Años</p>
+  <p class="foot-love reveal d1">24 &middot; 04 &middot; 2026 &nbsp;&middot;&nbsp; XV Años &nbsp;&middot;&nbsp; Con todo mi amor 💖</p>
 </footer>
 
 <!-- ════════════════════════════════════════
@@ -1239,9 +1213,10 @@ const obs = new IntersectionObserver(entries => {
 }, { threshold:0.07 });
 document.querySelectorAll('.reveal,.reveal-l,.reveal-r,.reveal-s').forEach(el => obs.observe(el));
 
-/* ── RSVP — envío real a FormSubmit ── */
-const rsvpForm = document.getElementById('rsvp-form');
-const rsvpBtn  = document.getElementById('rsvp-btn');
+/* ── RSVP — envío directo a Google Apps Script ── */
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec';
+const rsvpForm  = document.getElementById('rsvp-form');
+const rsvpBtn   = document.getElementById('rsvp-btn');
 
 rsvpForm.addEventListener('submit', async function(e){
   e.preventDefault();
@@ -1253,33 +1228,38 @@ rsvpForm.addEventListener('submit', async function(e){
     return;
   }
 
-  // Estado de carga
   rsvpBtn.disabled = true;
   rsvpBtn.querySelector('span').textContent = 'Enviando…';
 
+  const payload = {
+    formulario:              'Confirmación de asistencia',
+    nombre:                  name,
+    asistencia:              attend,
+    personas:                document.getElementById('r-count').value,
+    restriccion_alimentaria: document.getElementById('r-food').value.trim(),
+    mensaje:                 document.getElementById('r-msg').value.trim()
+  };
+
   try {
-    const data = new FormData(rsvpForm);
-    const res  = await fetch(rsvpForm.action, {
+    await fetch(GAS_URL, {
       method: 'POST',
-      body: data,
-      headers: { 'Accept': 'application/json' }
+      mode:   'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    if(res.ok){
-      // Éxito: mostrar pantalla de confirmación
-      document.getElementById('rsvp-inner').style.display = 'none';
-      rsvpForm.style.display = 'none';
-      const ok  = document.getElementById('rsvp-ok');
-      const msg = {
-        '✅ Sí, confirmo asistencia': `¡Gracias ${name}! 🎉\nTe esperamos en la fiesta de Emilia.`,
-        '❌ No puedo ir':             `¡Gracias ${name} por avisarnos!\nTe vamos a extrañar esa noche 💕`,
-        '🤔 Todavía no sé':           `¡Gracias ${name}!\nEsperamos que puedas venir 🤞`
-      };
-      document.getElementById('rsvp-ok-msg').textContent = msg[attend] || `¡Gracias ${name}! 💖`;
-      ok.style.display = 'block';
-    } else {
-      throw new Error('Error en el servidor');
-    }
+    // no-cors no devuelve status — asumimos éxito si no hubo excepción
+    document.getElementById('rsvp-inner').style.display = 'none';
+    rsvpForm.style.display = 'none';
+    const ok  = document.getElementById('rsvp-ok');
+    const msg = {
+      '✅ Sí, confirmo asistencia': `¡Gracias ${name}! 🎉\nTe esperamos en la fiesta de Emilia.`,
+      '❌ No puedo ir':             `¡Gracias ${name} por avisarnos!\nTe vamos a extrañar esa noche 💕`,
+      '🤔 Todavía no sé':           `¡Gracias ${name}!\nEsperamos que puedas venir 🤞`
+    };
+    document.getElementById('rsvp-ok-msg').textContent = msg[attend] || `¡Gracias ${name}! 💖`;
+    ok.style.display = 'block';
+
   } catch(err) {
     rsvpBtn.disabled = false;
     rsvpBtn.querySelector('span').textContent = 'Confirmar Asistencia';
@@ -1287,7 +1267,7 @@ rsvpForm.addEventListener('submit', async function(e){
   }
 });
 
-/* ── CANCIÓN — envío real a FormSubmit ── */
+/* ── CANCIÓN — envío directo a Google Apps Script ── */
 const songForm = document.getElementById('song-form');
 const songBtn  = document.getElementById('song-btn');
 
@@ -1301,31 +1281,31 @@ songForm.addEventListener('submit', async function(e){
   songBtn.disabled    = true;
   songBtn.textContent = '⏳';
 
+  const payload = {
+    formulario: 'Sugerencia de canción',
+    cancion:    val
+  };
+
   try {
-    const data = new FormData(songForm);
-    const res  = await fetch(songForm.action, {
+    await fetch(GAS_URL, {
       method: 'POST',
-      body: data,
-      headers: { 'Accept': 'application/json' }
+      mode:   'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    if(res.ok){
-      // Feedback visual optimista — aparece en pantalla al instante
-      const item = document.createElement('div');
-      item.className   = 'sug-item';
-      item.textContent = val;
-      document.getElementById('song-list').appendChild(item);
-      inp.value = '';
+    const item = document.createElement('div');
+    item.className   = 'sug-item';
+    item.textContent = val;
+    document.getElementById('song-list').appendChild(item);
+    inp.value = '';
 
-      // Flash verde en el botón
-      songBtn.textContent = '✅';
-      setTimeout(() => {
-        songBtn.textContent = '➕';
-        songBtn.disabled    = false;
-      }, 1800);
-    } else {
-      throw new Error('Error');
-    }
+    songBtn.textContent = '✅';
+    setTimeout(() => {
+      songBtn.textContent = '➕';
+      songBtn.disabled    = false;
+    }, 1800);
+
   } catch(err) {
     songBtn.disabled    = false;
     songBtn.textContent = '➕';
@@ -1333,7 +1313,6 @@ songForm.addEventListener('submit', async function(e){
   }
 });
 
-// Enter también envía
 document.getElementById('song-input').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); songForm.requestSubmit(); }
 });
