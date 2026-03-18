@@ -1218,12 +1218,21 @@ const GAS_URL   = 'https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70i
 const rsvpForm  = document.getElementById('rsvp-form');
 const rsvpBtn   = document.getElementById('rsvp-btn');
 
-rsvpForm.addEventListener('submit', async function(e){
-  e.preventDefault();
+// iframe invisible para capturar la respuesta sin redirigir la página
+const rsvpIframe = document.createElement('iframe');
+rsvpIframe.name  = 'rsvp-target';
+rsvpIframe.style.cssText = 'display:none;';
+document.body.appendChild(rsvpIframe);
+rsvpForm.target = 'rsvp-target';
+rsvpForm.action = GAS_URL;
+rsvpForm.method = 'POST';
+rsvpForm.enctype = 'application/x-www-form-urlencoded';
 
+rsvpForm.addEventListener('submit', function(e){
   const name   = document.getElementById('r-name').value.trim();
   const attend = document.getElementById('r-attend').value;
   if(!name || !attend){
+    e.preventDefault();
     alert('Por favor completá tu nombre y si vas a asistir 💖');
     return;
   }
@@ -1231,24 +1240,8 @@ rsvpForm.addEventListener('submit', async function(e){
   rsvpBtn.disabled = true;
   rsvpBtn.querySelector('span').textContent = 'Enviando…';
 
-  const payload = {
-    formulario:              'Confirmación de asistencia',
-    nombre:                  name,
-    asistencia:              attend,
-    personas:                document.getElementById('r-count').value,
-    restriccion_alimentaria: document.getElementById('r-food').value.trim(),
-    mensaje:                 document.getElementById('r-msg').value.trim()
-  };
-
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    // no-cors no devuelve status — asumimos éxito si no hubo excepción
+  // Mostrar pantalla de éxito después de un momento (sin esperar respuesta CORS)
+  setTimeout(() => {
     document.getElementById('rsvp-inner').style.display = 'none';
     rsvpForm.style.display = 'none';
     const ok  = document.getElementById('rsvp-ok');
@@ -1259,58 +1252,42 @@ rsvpForm.addEventListener('submit', async function(e){
     };
     document.getElementById('rsvp-ok-msg').textContent = msg[attend] || `¡Gracias ${name}! 💖`;
     ok.style.display = 'block';
-
-  } catch(err) {
-    rsvpBtn.disabled = false;
-    rsvpBtn.querySelector('span').textContent = 'Confirmar Asistencia';
-    alert('Hubo un problema al enviar. Intentá de nuevo 💖');
-  }
+  }, 1200);
 });
 
 /* ── CANCIÓN — envío directo a Google Apps Script ── */
 const songForm = document.getElementById('song-form');
 const songBtn  = document.getElementById('song-btn');
 
-songForm.addEventListener('submit', async function(e){
-  e.preventDefault();
+const songIframe = document.createElement('iframe');
+songIframe.name  = 'song-target';
+songIframe.style.cssText = 'display:none;';
+document.body.appendChild(songIframe);
+songForm.target  = 'song-target';
+songForm.action  = GAS_URL;
+songForm.method  = 'POST';
+songForm.enctype = 'application/x-www-form-urlencoded';
 
+songForm.addEventListener('submit', function(e){
   const inp = document.getElementById('song-input');
   const val = inp.value.trim();
-  if(!val) return;
+  if(!val){ e.preventDefault(); return; }
 
   songBtn.disabled    = true;
   songBtn.textContent = '⏳';
 
-  const payload = {
-    formulario: 'Sugerencia de canción',
-    cancion:    val
-  };
-
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
+  setTimeout(() => {
     const item = document.createElement('div');
     item.className   = 'sug-item';
     item.textContent = val;
     document.getElementById('song-list').appendChild(item);
     inp.value = '';
-
     songBtn.textContent = '✅';
     setTimeout(() => {
       songBtn.textContent = '➕';
       songBtn.disabled    = false;
     }, 1800);
-
-  } catch(err) {
-    songBtn.disabled    = false;
-    songBtn.textContent = '➕';
-    alert('No se pudo enviar la canción. Intentá de nuevo.');
-  }
+  }, 1000);
 });
 
 document.getElementById('song-input').addEventListener('keydown', e => {
