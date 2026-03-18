@@ -978,7 +978,7 @@ button,input,select,textarea { font-family:inherit; }
       <p class="sec-lbl">¿Tenés una sugerencia?</p>
       <h3 style="font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2.8vw,19px);font-weight:300;color:var(--silver-light);font-style:italic;">Sumá tu canción a la playlist de la noche</h3>
 
-      <form id="song-form" action="https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec" method="POST">
+      <form id="song-form" action="https://script.google.com/macros/s/AKfycbyrfjIb70z8VkN-oAP3E6PGvRyFkI34WDr6Do7t_j8I2I0JkQxYhhSSjqhkGytG2K4W4A/exec" method="POST">
         <input type="hidden" name="formulario" value="Sugerencia de canción">
 
         <div class="sug-row">
@@ -1007,7 +1007,7 @@ button,input,select,textarea { font-family:inherit; }
     </div>
     <div class="rsvp-form reveal">
 
-      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec" method="POST">
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbyrfjIb70z8VkN-oAP3E6PGvRyFkI34WDr6Do7t_j8I2I0JkQxYhhSSjqhkGytG2K4W4A/exec" method="POST">
         <input type="hidden" name="formulario" value="Confirmación de asistencia">
 
         <div id="rsvp-inner">
@@ -1214,7 +1214,7 @@ const obs = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal,.reveal-l,.reveal-r,.reveal-s').forEach(el => obs.observe(el));
 
 /* ── RSVP — envío directo a Google Apps Script ── */
-const GAS_URL   = 'https://script.google.com/macros/s/AKfycbwSldzQoYgKJY8bKda70iNYiEAHbN_UfVegwUoP_z4ae5FyYHWnZZJ3f6hp-suvey_06Q/exec';
+const GAS_URL   = 'https://script.google.com/macros/s/AKfycbyrfjIb70z8VkN-oAP3E6PGvRyFkI34WDr6Do7t_j8I2I0JkQxYhhSSjqhkGytG2K4W4A/exec';
 const rsvpForm  = document.getElementById('rsvp-form');
 const rsvpBtn   = document.getElementById('rsvp-btn');
 
