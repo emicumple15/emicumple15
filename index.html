@@ -52,6 +52,10 @@ button,input,select,textarea { font-family:inherit; }
   background:linear-gradient(135deg,#f4f7fa,#fdf0f5);
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px;
   transition:opacity 0.9s ease, visibility 0.9s ease;
+  animation: loader-auto-hide 0.9s ease 2s forwards;
+}
+@keyframes loader-auto-hide {
+  to { opacity:0; visibility:hidden; pointer-events:none; }
 }
 #loader.hide { opacity:0; visibility:hidden; pointer-events:none; }
 
@@ -1137,27 +1141,12 @@ button,input,select,textarea { font-family:inherit; }
   <div class="foot-orn"><div class="dmd"></div></div>
   <div class="foot-name reveal">Emilia</div>
   <p class="foot-love reveal d1">24 &middot; 04 &middot; 2026 &nbsp;&middot;&nbsp; XV Años &nbsp;&middot;&nbsp; Con todo mi amor 💖</p>
-  <p class="foot-credit reveal d2">Design by <a id="agro-link" href="#">Agroberman</a></p>
+  <p class="foot-credit reveal d2">Design by <a href="https://wa.me/5493413573546?text=Hola%2C%20quisiera%20consultar%20por%20una%20invitaci%C3%B3n%20digital" target="_blank">Agroberman</a></p>
 </footer>
 
 <!-- ════════════════════════════════════════
      SCRIPTS
 ════════════════════════════════════════ -->
-<script>
-/* ── AGROBERMAN LINK — sin mailto directo para evitar Cloudflare ── */
-(function(){
-  const el = document.getElementById('agro-link');
-  if(!el) return;
-  el.addEventListener('click', function(e){
-    e.preventDefault();
-    var u = 'agroberman';
-    var d = 'gmail.com';
-    var s = encodeURIComponent('Consulta por invitación digital');
-    var b = encodeURIComponent('Hola, quisiera consultar por una invitación digital');
-    window.location.href = 'mai'+'lto:'+u+'@'+d+'?subject='+s+'&body='+b;
-  });
-})();
-</script>
 <script>
 /* ── LOADER ── */
 const loaderEl = document.getElementById('loader');
@@ -1396,16 +1385,15 @@ document.addEventListener('mousemove', e => {
 
   function setupSize(){
     const wrap = hc.parentElement;
-    const s = wrap.offsetWidth;
-    hc.width  = s * window.devicePixelRatio;
-    hc.height = s * window.devicePixelRatio;
-    htx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    return wrap.offsetWidth;
+    const s = wrap.offsetWidth > 0 ? wrap.offsetWidth : parseInt(getComputedStyle(wrap).width) || 160;
+    hc.width  = s * (window.devicePixelRatio || 1);
+    hc.height = s * (window.devicePixelRatio || 1);
+    htx.setTransform(1,0,0,1,0,0);
+    htx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    return s;
   }
 
-  let size = setupSize();
-  window.addEventListener('resize', () => { size = setupSize(); });
-
+  let size = 160;
   let tick = 0;
 
   function drawHeroBall(){
@@ -1536,6 +1524,15 @@ document.addEventListener('mousemove', e => {
     htx.restore();
 
     requestAnimationFrame(drawHeroBall);
+  }
+
+  // Iniciar inmediatamente con tamaño calculado
+  size = setupSize();
+  window.addEventListener('resize', () => { size = setupSize(); });
+
+  // Si el tamaño era 0, reintentar cuando el loader se va
+  if(size < 10){
+    setTimeout(() => { size = setupSize(); }, 2400);
   }
 
   drawHeroBall();
