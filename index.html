@@ -920,23 +920,23 @@ button,input,select,textarea { font-family:inherit; }
     </div>
     <div class="gal-grid">
       <div class="gal-slot g-main reveal d1">
-        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/1.jpg" alt="Los primeros días ✨" />
+        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/1.jpg" alt="Los primeros días ✨" loading="lazy" />
         <div class="g-cap">Los primeros días ✨</div>
       </div>
       <div class="gal-slot reveal d2">
-        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/2.jpg" alt="Con los primos 💛" />
+        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/2.jpg" alt="Con los primos 💛" loading="lazy" />
         <div class="g-cap">Con los primos 💛</div>
       </div>
       <div class="gal-slot reveal d3">
-        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/3.jpg" alt="Soplando los 14 🎂" />
+        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/3.jpg" alt="Soplando los 14 🎂" loading="lazy" />
         <div class="g-cap">Soplando los 14 🎂</div>
       </div>
       <div class="gal-slot reveal d4">
-        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/4.jpg" alt="Barcelona en familia 🌍" />
+        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/4.jpg" alt="Barcelona en familia 🌍" loading="lazy" />
         <div class="g-cap">Barcelona en familia 🌍</div>
       </div>
       <div class="gal-slot reveal d5">
-        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/5.jpg" alt="Lisboa juntos 🏛️" />
+        <img src="https://raw.githubusercontent.com/emicumple15/emicumple15/main/5.jpg" alt="Lisboa juntos 🏛️" loading="lazy" />
         <div class="g-cap">Lisboa juntos 🏛️</div>
       </div>
     </div>
@@ -1149,19 +1149,17 @@ const loaderEl = document.getElementById('loader');
 const pctEl    = document.getElementById('ldr-pct');
 let pct = 0;
 const ptimer = setInterval(() => {
-  pct = Math.min(pct + Math.random() * 3.8, 99);
+  pct = Math.min(pct + Math.random() * 8, 99);
   pctEl.textContent = Math.floor(pct) + '%';
 }, 55);
 function hideLoader(){
   if(loaderEl.classList.contains('hide')) return;
   clearInterval(ptimer);
   pctEl.textContent = '100%';
-  setTimeout(() => loaderEl.classList.add('hide'), 500);
+  setTimeout(() => loaderEl.classList.add('hide'), 400);
 }
-// No esperar imágenes externas — ocultar cuando el DOM está listo
-document.addEventListener('DOMContentLoaded', () => setTimeout(hideLoader, 1800));
-// Fallback máximo: 2.5 segundos
-setTimeout(hideLoader, 2500);
+// Ocultar siempre a los 2 segundos, sin esperar nada externo
+setTimeout(hideLoader, 2000);
 
 /* ── PARTICLES ── */
 const cvs = document.getElementById('particles');
