@@ -6,13 +6,17 @@
 <title>Emilia · XV Años · 24.04.26</title>
 <!-- Open Graph — preview en WhatsApp y redes -->
 <meta property="og:title"       content="Emilia · XV Años 🎉" />
-<meta property="og:description" content="Emilia · XV Años · 24.04.26" />
+<meta property="og:description" content="Te invito a celebrar mis 15 · Viernes 24 de Abril 2026 · 21:30 hs · Salón Mandarina, Rosario" />
 <meta property="og:image"       content="https://raw.githubusercontent.com/emicumple15/emicumple15/main/invite.jpg" />
 <meta property="og:image:width"  content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:url"         content="https://emicumple15.github.io/emicumple15/" />
 <meta property="og:type"        content="website" />
 <meta property="og:locale"      content="es_AR" />
+<meta name="twitter:card"       content="summary_large_image" />
+<meta name="twitter:title"      content="Emilia · XV Años 🎉" />
+<meta name="twitter:description" content="Te invito a celebrar mis 15 · Viernes 24 de Abril 2026 · 21:30 hs · Salón Mandarina, Rosario" />
+<meta name="twitter:image"      content="https://raw.githubusercontent.com/emicumple15/emicumple15/main/invite.jpg" />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -1133,13 +1137,28 @@ button,input,select,textarea { font-family:inherit; }
   <div class="foot-orn"><div class="dmd"></div></div>
   <div class="foot-name reveal">Emilia</div>
   <p class="foot-love reveal d1">24 &middot; 04 &middot; 2026 &nbsp;&middot;&nbsp; XV Años &nbsp;&middot;&nbsp; Con todo mi amor 💖</p>
-  <p class="foot-credit reveal d2">Design by <a href="/cdn-cgi/l/email-protection#721315001d1017001f131c32151f131b1e5c111d1f4d010710181711064f311d1c01071e0613574042021d005740421b1c041b0613111bb1c11c574042161b151b06131e54101d160b4f3a1d1e1357403157404203071b011b170013574042111d1c01071e061300574042021d00574042071c135740421b1c041b0613111bb1c11c574042161b151b06131e">Agroberman</a></p>
+  <p class="foot-credit reveal d2">Design by <a id="agro-link" href="#">Agroberman</a></p>
 </footer>
 
 <!-- ════════════════════════════════════════
      SCRIPTS
 ════════════════════════════════════════ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+/* ── AGROBERMAN LINK — sin mailto directo para evitar Cloudflare ── */
+(function(){
+  const el = document.getElementById('agro-link');
+  if(!el) return;
+  el.addEventListener('click', function(e){
+    e.preventDefault();
+    var u = 'agroberman';
+    var d = 'gmail.com';
+    var s = encodeURIComponent('Consulta por invitación digital');
+    var b = encodeURIComponent('Hola, quisiera consultar por una invitación digital');
+    window.location.href = 'mai'+'lto:'+u+'@'+d+'?subject='+s+'&body='+b;
+  });
+})();
+</script>
+<script>
 /* ── LOADER ── */
 const loaderEl = document.getElementById('loader');
 const pctEl    = document.getElementById('ldr-pct');
