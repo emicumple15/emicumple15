@@ -207,7 +207,7 @@ button,input,select,textarea { font-family:inherit; }
   top: -40px; left: 50%;
   transform: translateX(-50%);
   width: 1px; height: 40px;
-  background: linear-gradient(to bottom, rgba(200,214,229,.4), rgba(200,214,229,.15));
+  background: linear-gradient(to bottom, rgba(100,130,160,.5), rgba(100,130,160,.15));
 }
 
 /* sombra proyectada debajo */
@@ -216,7 +216,7 @@ button,input,select,textarea { font-family:inherit; }
   bottom: -18px; left: 50%;
   transform: translateX(-50%);
   width: 55%; height: 12px;
-  background: radial-gradient(ellipse, rgba(255,45,120,.35) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(255,45,120,.3) 0%, transparent 70%);
   border-radius: 50%;
   animation: ball-shadow 3s ease-in-out infinite;
 }
@@ -225,18 +225,72 @@ button,input,select,textarea { font-family:inherit; }
   50%      { transform: translateX(-50%) scaleX(.75); opacity:.3; }
 }
 
-/* la bola en sí — canvas 3D */
+/* ── BOLA DE ESPEJOS CSS PURA — fallback si canvas falla ── */
+.hero-ball-sphere {
+  display: none; /* oculta por defecto, se muestra si canvas falla */
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  animation: hero-ball-swing 3s ease-in-out infinite;
+  box-shadow:
+    0 0 30px rgba(255,45,120,.4),
+    0 0 60px rgba(200,214,229,.2),
+    inset -8px -8px 20px rgba(0,0,0,.5),
+    inset 4px 4px 12px rgba(255,255,255,.3);
+  background:
+    /* destellos individuales */
+    radial-gradient(circle at 28% 25%, rgba(255,255,255,1)   3%,  transparent 7%),
+    radial-gradient(circle at 65% 20%, rgba(255,180,210,.95) 2%,  transparent 6%),
+    radial-gradient(circle at 80% 55%, rgba(200,220,240,.9)  2%,  transparent 5%),
+    radial-gradient(circle at 18% 65%, rgba(255,45,120,.85)  2%,  transparent 5%),
+    radial-gradient(circle at 50% 82%, rgba(255,255,255,.8)  2%,  transparent 5%),
+    radial-gradient(circle at 88% 30%, rgba(200,220,240,.9)  2%,  transparent 5%),
+    radial-gradient(circle at 38% 48%, rgba(255,255,255,.6)  1%,  transparent 4%),
+    radial-gradient(circle at 70% 70%, rgba(255,45,120,.6)   1.5%,transparent 4%),
+    radial-gradient(circle at 15% 40%, rgba(200,220,240,.7)  1.5%,transparent 4%),
+    /* rejilla de espejos */
+    repeating-conic-gradient(
+      rgba(140,170,200,.45) 0deg 3deg,
+      rgba(220,235,248,.15) 3deg 9deg
+    ),
+    /* base esférica */
+    radial-gradient(circle at 32% 30%, #ddeeff 0%, #a0bcd0 25%, #507090 55%, #1a2535 100%);
+}
+
+/* capa giratoria de brillo */
+.hero-ball-sphere::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    rgba(255,255,255,.22) 0deg 2deg,
+    transparent 2deg 8deg
+  );
+  animation: mball-spin 3s linear infinite;
+}
+
+/* brillo especular */
+.hero-ball-sphere::after {
+  content: '';
+  position: absolute;
+  width: 40%; height: 35%;
+  top: 10%; left: 12%;
+  background: radial-gradient(ellipse, rgba(255,255,255,.9) 0%, rgba(255,255,255,.3) 40%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+@keyframes hero-ball-swing {
+  0%,100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg);  }
+}
 #hero-ball-canvas {
   width: 100%; height: 100%;
   border-radius: 50%;
   display: block;
-  filter: drop-shadow(0 0 18px rgba(255,45,120,.5))
-          drop-shadow(0 0 40px rgba(200,214,229,.2));
   animation: hero-ball-swing 3s ease-in-out infinite;
-}
-@keyframes hero-ball-swing {
-  0%,100% { transform: rotate(-2deg); }
-  50%      { transform: rotate(2deg); }
+  filter: drop-shadow(0 0 18px rgba(255,45,120,.5)) drop-shadow(0 0 40px rgba(200,214,229,.2));
 }
 
 /* destellos radiales que emite la bola hero */
@@ -1377,166 +1431,96 @@ document.addEventListener('mousemove', e => {
   bg.style.transform = `translate(calc(-50% + ${rx}px), calc(-50% + ${ry}px))`;
 });
 
-/* ── HERO MIRROR BALL — bola 3D protagonista ── */
-(function(){
-  const hc  = document.getElementById('hero-ball-canvas');
-  if(!hc) return;
-  const htx = hc.getContext('2d');
 
-  function setupSize(){
-    const wrap = hc.parentElement;
-    const s = wrap.offsetWidth > 0 ? wrap.offsetWidth : parseInt(getComputedStyle(wrap).width) || 160;
-    hc.width  = s * (window.devicePixelRatio || 1);
-    hc.height = s * (window.devicePixelRatio || 1);
-    htx.setTransform(1,0,0,1,0,0);
-    htx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
-    return s;
-  }
+/* ── HERO MIRROR BALL — canvas 3D con fallback CSS ── */
+try {
+  var hc = document.getElementById('hero-ball-canvas');
+  if(hc) {
+    var htx = hc.getContext('2d');
+    var hTick = 0;
 
-  let size = 160;
-  let tick = 0;
-
-  function drawHeroBall(){
-    const s   = size;
-    const cx  = s / 2;
-    const cy  = s / 2;
-    const r   = s * 0.46;
-
-    htx.clearRect(0, 0, s, s);
-    tick += 0.018;
-
-    /* ── base sphere gradient ── */
-    const baseGrad = htx.createRadialGradient(
-      cx - r*.32, cy - r*.36, r*.04,
-      cx, cy, r
-    );
-    baseGrad.addColorStop(0,   'rgba(255,255,255,1)');
-    baseGrad.addColorStop(.08, 'rgba(200,215,230,1)');
-    baseGrad.addColorStop(.3,  'rgba(70,90,115,1)');
-    baseGrad.addColorStop(.65, 'rgba(18,26,40,1)');
-    baseGrad.addColorStop(1,   'rgba(5,8,15,1)');
-
-    htx.save();
-    htx.beginPath();
-    htx.arc(cx, cy, r, 0, Math.PI*2);
-    htx.fillStyle = baseGrad;
-    htx.fill();
-    htx.restore();
-
-    /* ── mirror tiles ── */
-    const ROWS = 14;
-    const COLS = 14;
-
-    htx.save();
-    htx.beginPath();
-    htx.arc(cx, cy, r, 0, Math.PI*2);
-    htx.clip();
-
-    for(let row = 0; row <= ROWS; row++){
-      const phi  = (row / ROWS) * Math.PI;            // 0 → π  (top → bottom)
-      const sinP = Math.sin(phi);
-      const cosP = Math.cos(phi);
-      const ringR = r * sinP;                          // radius of this latitude ring
-
-      const cols = Math.max(1, Math.round(COLS * sinP));
-
-      for(let col = 0; col < cols; col++){
-        const theta = (col / cols) * Math.PI * 2 + tick; // rotation over time
-        const cosT  = Math.cos(theta);
-        const sinT  = Math.sin(theta);
-
-        // 3D point on sphere surface
-        const nx = sinP * cosT;
-        const ny = sinP * sinT;
-        const nz = cosP;
-
-        // Project to 2D
-        const px = cx + nx * r;
-        const py = cy - nz * r;   // y-axis: top = nz>0
-
-        // Tile size shrinks toward poles
-        const tileW = (r * 2 / COLS) * sinP * 0.82;
-        const tileH = (r * 2 / ROWS) * 0.82;
-
-        if(tileW < 1) continue;
-
-        // Lighting: key light from upper-left, fill from right
-        const light   = Math.max(0, nx*-.45 + ny*.15 + nz*.88);
-        const rim     = Math.max(0, nx*.3  - nz*.2) * .4;
-
-        // Tiles plateados con alto contraste — visibles sobre fondo claro
-        const isBright = Math.sin(col * 1.7 + row * 2.3 + tick * 3.1) > 0.55;
-        const isPink   = Math.sin(col * 2.3 + row * 1.1 + tick * 1.7) > 0.82;
-        const hue   = isPink ? 340 : 205 + Math.sin(col * 0.8 + row * 0.6 + tick) * 15;
-        const sat   = isPink ? 85 : (isBright ? 12 : 25);
-        const lum   = isBright ? Math.min(96, 60 + light * 36 + rim * 18)
-                                : 12 + light * 52 + rim * 20;
-        const alpha = (.18 + light * .70 + rim * .28) * (.65 + .35 * Math.sin(tick*1.8 + col*.5 + row*.4));
-
-        htx.save();
-        htx.translate(px, py);
-        htx.rotate(theta * .5 + tick * .3);
-
-        const tg = htx.createLinearGradient(-tileW/2,-tileH/2, tileW/2, tileH/2);
-        tg.addColorStop(0, `hsla(${hue},${sat}%,${Math.min(97,lum+22)}%,${alpha})`);
-        tg.addColorStop(1, `hsla(${hue+10},${sat}%,${lum}%,${alpha*.6})`);
-
-        htx.fillStyle = tg;
-        htx.beginPath();
-        htx.rect(-tileW/2, -tileH/2, tileW, tileH);
-        htx.fill();
-
-        // borde del tile — define la grilla de espejos
-        htx.strokeStyle = `rgba(0,0,0,${0.08 + light * 0.12})`;
-        htx.lineWidth = 0.4;
-        htx.strokeRect(-tileW/2, -tileH/2, tileW, tileH);
-        htx.restore();
-      }
+    function hSetup(){
+      var w = hc.parentElement.offsetWidth || 160;
+      hc.width  = w * (window.devicePixelRatio||1);
+      hc.height = w * (window.devicePixelRatio||1);
+      htx.setTransform(1,0,0,1,0,0);
+      htx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+      return w;
     }
-    htx.restore();
 
-    /* ── specular highlight ── */
-    htx.save();
-    const hiG = htx.createRadialGradient(
-      cx - r*.30, cy - r*.34, 0,
-      cx - r*.30, cy - r*.34, r*.42
-    );
-    hiG.addColorStop(0,   'rgba(255,255,255,.98)');
-    hiG.addColorStop(.25, 'rgba(235,242,250,.60)');
-    hiG.addColorStop(.6,  'rgba(200,214,229,.12)');
-    hiG.addColorStop(1,   'transparent');
-    htx.beginPath();
-    htx.arc(cx, cy, r, 0, Math.PI*2);
-    htx.fillStyle = hiG;
-    htx.fill();
-    htx.restore();
+    var hSize = hSetup();
+    window.addEventListener('resize', function(){ hSize = hSetup(); });
 
-    /* ── cool silver rim light ── */
-    htx.save();
-    const rimG = htx.createRadialGradient(cx + r*.55, cy + r*.55, r*.2, cx, cy, r);
-    rimG.addColorStop(0,   'transparent');
-    rimG.addColorStop(.75, 'transparent');
-    rimG.addColorStop(1,   'rgba(180,200,220,.22)');
-    htx.beginPath();
-    htx.arc(cx, cy, r, 0, Math.PI*2);
-    htx.fillStyle = rimG;
-    htx.fill();
-    htx.restore();
+    function hDraw(){
+      try {
+        var s = hSize, cx = s/2, cy = s/2, r = s*0.46;
+        htx.clearRect(0,0,s,s);
+        hTick += 0.018;
 
-    requestAnimationFrame(drawHeroBall);
+        // base
+        var bg = htx.createRadialGradient(cx-r*.32,cy-r*.36,r*.04,cx,cy,r);
+        bg.addColorStop(0,   'rgba(255,255,255,1)');
+        bg.addColorStop(.08, 'rgba(200,215,230,1)');
+        bg.addColorStop(.3,  'rgba(70,90,115,1)');
+        bg.addColorStop(.65, 'rgba(18,26,40,1)');
+        bg.addColorStop(1,   'rgba(5,8,15,1)');
+        htx.save(); htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
+        htx.fillStyle=bg; htx.fill(); htx.restore();
+
+        // tiles
+        htx.save(); htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2); htx.clip();
+        var ROWS=14, COLS=14;
+        for(var row=0;row<=ROWS;row++){
+          var phi=row/ROWS*Math.PI, sinP=Math.sin(phi), cosP=Math.cos(phi);
+          var cols=Math.max(1,Math.round(COLS*sinP));
+          for(var col=0;col<cols;col++){
+            var theta=col/cols*Math.PI*2+hTick;
+            var nx=sinP*Math.cos(theta), nz=cosP;
+            var px=cx+nx*r, py=cy-nz*r;
+            var tw=(r*2/COLS)*sinP*.82, th=(r*2/ROWS)*.82;
+            if(tw<1) continue;
+            var light=Math.max(0,nx*-.45+nz*.88);
+            var isBright=Math.sin(col*1.7+row*2.3+hTick*3.1)>.55;
+            var isPink=Math.sin(col*2.3+row*1.1+hTick*1.7)>.82;
+            var hue=isPink?340:205;
+            var sat=isPink?85:(isBright?12:25);
+            var lum=isBright?Math.min(96,60+light*36):12+light*52;
+            var alpha=(.18+light*.70)*(.65+.35*Math.sin(hTick*1.8+col*.5+row*.4));
+            htx.save(); htx.translate(px,py); htx.rotate(theta*.5+hTick*.3);
+            var tg=htx.createLinearGradient(-tw/2,-th/2,tw/2,th/2);
+            tg.addColorStop(0,'hsla('+hue+','+sat+'%,'+Math.min(97,lum+22)+'%,'+alpha+')');
+            tg.addColorStop(1,'hsla('+hue+','+sat+'%,'+lum+'%,'+(alpha*.6)+')');
+            htx.fillStyle=tg; htx.fillRect(-tw/2,-th/2,tw,th);
+            htx.strokeStyle='rgba(0,0,0,'+(0.08+light*0.12)+')';
+            htx.lineWidth=0.4; htx.strokeRect(-tw/2,-th/2,tw,th);
+            htx.restore();
+          }
+        }
+        htx.restore();
+
+        // specular
+        htx.save();
+        var hi=htx.createRadialGradient(cx-r*.30,cy-r*.34,0,cx-r*.30,cy-r*.34,r*.42);
+        hi.addColorStop(0,'rgba(255,255,255,.98)');
+        hi.addColorStop(.25,'rgba(235,242,250,.60)');
+        hi.addColorStop(1,'transparent');
+        htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
+        htx.fillStyle=hi; htx.fill(); htx.restore();
+
+        // rim
+        htx.save();
+        var rim=htx.createRadialGradient(cx+r*.55,cy+r*.55,r*.2,cx,cy,r);
+        rim.addColorStop(0,'transparent'); rim.addColorStop(.75,'transparent');
+        rim.addColorStop(1,'rgba(180,200,220,.22)');
+        htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
+        htx.fillStyle=rim; htx.fill(); htx.restore();
+
+        requestAnimationFrame(hDraw);
+      } catch(e2) { /* silencioso */ }
+    }
+    hDraw();
   }
-
-  // Iniciar inmediatamente con tamaño calculado
-  size = setupSize();
-  window.addEventListener('resize', () => { size = setupSize(); });
-
-  // Si el tamaño era 0, reintentar cuando el loader se va
-  if(size < 10){
-    setTimeout(() => { size = setupSize(); }, 2400);
-  }
-
-  drawHeroBall();
-})();
+} catch(e) { /* fallback CSS ya visible */ }
 
 /* ── SPARKLES volando ── */
 (function(){
