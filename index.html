@@ -1153,12 +1153,15 @@ const ptimer = setInterval(() => {
   pctEl.textContent = Math.floor(pct) + '%';
 }, 55);
 function hideLoader(){
+  if(loaderEl.classList.contains('hide')) return;
   clearInterval(ptimer);
   pctEl.textContent = '100%';
   setTimeout(() => loaderEl.classList.add('hide'), 500);
 }
-window.addEventListener('load', hideLoader);
-setTimeout(hideLoader, 3400);
+// No esperar imágenes externas — ocultar cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', () => setTimeout(hideLoader, 1800));
+// Fallback máximo: 2.5 segundos
+setTimeout(hideLoader, 2500);
 
 /* ── PARTICLES ── */
 const cvs = document.getElementById('particles');
