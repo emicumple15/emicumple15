@@ -1449,115 +1449,23 @@ document.addEventListener('mousemove', e => {
 });
 
 
-/* ── HERO MIRROR BALL — canvas 3D con fallback CSS ── */
-try {
-  var hc = document.getElementById('hero-ball-canvas');
-  if(hc) {
-    var htx = hc.getContext('2d');
-    var hTick = 0;
-
-    function hSetup(){
-      var w = hc.parentElement.offsetWidth || 160;
-      hc.width  = w * (window.devicePixelRatio||1);
-      hc.height = w * (window.devicePixelRatio||1);
-      htx.setTransform(1,0,0,1,0,0);
-      htx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
-      return w;
-    }
-
-    var hSize = hSetup();
-    window.addEventListener('resize', function(){ hSize = hSetup(); });
-
-    function hDraw(){
-      try {
-        var s = hSize, cx = s/2, cy = s/2, r = s*0.46;
-        htx.clearRect(0,0,s,s);
-        hTick += 0.018;
-
-        // base
-        var bg = htx.createRadialGradient(cx-r*.32,cy-r*.36,r*.04,cx,cy,r);
-        bg.addColorStop(0,   'rgba(255,255,255,1)');
-        bg.addColorStop(.08, 'rgba(200,215,230,1)');
-        bg.addColorStop(.3,  'rgba(70,90,115,1)');
-        bg.addColorStop(.65, 'rgba(18,26,40,1)');
-        bg.addColorStop(1,   'rgba(5,8,15,1)');
-        htx.save(); htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
-        htx.fillStyle=bg; htx.fill(); htx.restore();
-
-        // tiles
-        htx.save(); htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2); htx.clip();
-        var ROWS=14, COLS=14;
-        for(var row=0;row<=ROWS;row++){
-          var phi=row/ROWS*Math.PI, sinP=Math.sin(phi), cosP=Math.cos(phi);
-          var cols=Math.max(1,Math.round(COLS*sinP));
-          for(var col=0;col<cols;col++){
-            var theta=col/cols*Math.PI*2+hTick;
-            var nx=sinP*Math.cos(theta), nz=cosP;
-            var px=cx+nx*r, py=cy-nz*r;
-            var tw=(r*2/COLS)*sinP*.82, th=(r*2/ROWS)*.82;
-            if(tw<1) continue;
-            var light=Math.max(0,nx*-.45+nz*.88);
-            var isBright=Math.sin(col*1.7+row*2.3+hTick*3.1)>.55;
-            var isPink=Math.sin(col*2.3+row*1.1+hTick*1.7)>.82;
-            var hue=isPink?340:205;
-            var sat=isPink?85:(isBright?12:25);
-            var lum=isBright?Math.min(96,60+light*36):12+light*52;
-            var alpha=(.18+light*.70)*(.65+.35*Math.sin(hTick*1.8+col*.5+row*.4));
-            htx.save(); htx.translate(px,py); htx.rotate(theta*.5+hTick*.3);
-            var tg=htx.createLinearGradient(-tw/2,-th/2,tw/2,th/2);
-            tg.addColorStop(0,'hsla('+hue+','+sat+'%,'+Math.min(97,lum+22)+'%,'+alpha+')');
-            tg.addColorStop(1,'hsla('+hue+','+sat+'%,'+lum+'%,'+(alpha*.6)+')');
-            htx.fillStyle=tg; htx.fillRect(-tw/2,-th/2,tw,th);
-            htx.strokeStyle='rgba(0,0,0,'+(0.08+light*0.12)+')';
-            htx.lineWidth=0.4; htx.strokeRect(-tw/2,-th/2,tw,th);
-            htx.restore();
-          }
-        }
-        htx.restore();
-
-        // specular
-        htx.save();
-        var hi=htx.createRadialGradient(cx-r*.30,cy-r*.34,0,cx-r*.30,cy-r*.34,r*.42);
-        hi.addColorStop(0,'rgba(255,255,255,.98)');
-        hi.addColorStop(.25,'rgba(235,242,250,.60)');
-        hi.addColorStop(1,'transparent');
-        htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
-        htx.fillStyle=hi; htx.fill(); htx.restore();
-
-        // rim
-        htx.save();
-        var rim=htx.createRadialGradient(cx+r*.55,cy+r*.55,r*.2,cx,cy,r);
-        rim.addColorStop(0,'transparent'); rim.addColorStop(.75,'transparent');
-        rim.addColorStop(1,'rgba(180,200,220,.22)');
-        htx.beginPath(); htx.arc(cx,cy,r,0,Math.PI*2);
-        htx.fillStyle=rim; htx.fill(); htx.restore();
-
-        requestAnimationFrame(hDraw);
-      } catch(e2) { /* silencioso */ }
-    }
-    hDraw();
-  }
-} catch(e) { /* fallback CSS ya visible */ }
-
 /* ── HERO MIRROR BALL ── */
 (function(){
   var hc = document.getElementById('hero-ball-canvas');
   if(!hc) return;
   var htx = hc.getContext('2d');
-  var hTick = 0;
+  var hTick = 0, hSize = 160;
 
   function hSetup(){
-    var wrap = hc.parentElement;
-    var w = wrap.offsetWidth || 160;
+    var w = hc.parentElement.offsetWidth;
+    if(!w || w < 10) return hSize;
     hc.width  = w * (window.devicePixelRatio||1);
     hc.height = w * (window.devicePixelRatio||1);
     htx.setTransform(1,0,0,1,0,0);
     htx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+    hSize = w;
     return w;
   }
-
-  var hSize = hSetup();
-  window.addEventListener('resize', function(){ hSize = hSetup(); });
 
   function hDraw(){
     var s=hSize, cx=s/2, cy=s/2, r=s*0.46;
@@ -1621,24 +1529,37 @@ try {
     requestAnimationFrame(hDraw);
   }
 
-  // Esperar a que el loader desaparezca para tener dimensiones correctas
+  // Iniciar cuando el loader desaparece
   setTimeout(function(){
-    hSize = hSetup();
+    hSetup();
     hDraw();
   }, 2100);
+
+  window.addEventListener('resize', hSetup);
 })();
 
 /* ── SPARKLES volando ── */
 (function(){
-  const container = document.getElementById('sparkles');
-  const COLORS = ['#fff','#FF2D78','#FF6BA8','#C8D6E5','#FFB3CE'];
-  for(let i = 0; i < 22; i++){
-    const sp = document.createElement('div');
+  var container = document.getElementById('sparkles');
+  if(!container) return;
+  var COLORS = ['#FF2D78','#FF6BA8','#C8D6E5','#FFB3CE','#ffffff'];
+  for(var i = 0; i < 18; i++){
+    var sp = document.createElement('div');
     sp.className = 'sparkle';
-    const tx = (Math.random() - .5) * 200;
-    const ty = -(60 + Math.random() * 160);
-    sp.style.cssText = `
-      left:${Math.random()*100}vw;
-      top:${20 + Math.random()*70}vh;
-      --tx:${tx}px; --ty:${ty}px;
-      --dur:${3 
+    var tx = (Math.random() - .5) * 180;
+    var ty = -(50 + Math.random() * 140);
+    sp.style.cssText =
+      'left:' + (Math.random()*100) + 'vw;' +
+      'top:' + (20 + Math.random()*70) + 'vh;' +
+      '--tx:' + tx + 'px;--ty:' + ty + 'px;' +
+      '--dur:' + (3 + Math.random()*5) + 's;' +
+      '--del:' + (Math.random()*6) + 's;' +
+      'background:' + COLORS[Math.floor(Math.random()*COLORS.length)] + ';' +
+      'width:' + (2+Math.random()*3) + 'px;' +
+      'height:' + (2+Math.random()*3) + 'px;';
+    container.appendChild(sp);
+  }
+})();
+</script>
+</body>
+</html>
